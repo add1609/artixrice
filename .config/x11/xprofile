@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# This file runs when a DM logs you into a graphical session.
+# If you use startx/xinit like a Chad, this file will also be sourced.
+
+xrdb ${XDG_CONFIG_HOME:-$HOME/.config}/x11/xresources & xrdbpid=$!
+xrandr --dpi 96
+
+setbg &
+remaps &
+
+autostart="mpd xcompmgr dunst unclutter pipewire"
+
+for program in $autostart; do
+	pidof -s "$program" || "$program" >/dev/null 2>&1 &
+done >/dev/null 2>&1
+
+# Ensure that xrdb has finished running before moving on to start the WM/DE.
+[ -n "$xrdbpid" ] && wait "$xrdbpid"

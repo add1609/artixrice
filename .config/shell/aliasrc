@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Use neovim for vim if present.
+[ -x "$(command -v nvim)" ] && alias vim="nvim" vimdiff="nvim -d"
+
+# Use $XINITRC variable if file exists.
+[ -f "$XINITRC" ] && alias startx="startx $XINITRC 1>/tmp/xlog.txt 2>/tmp/xerr.txt"
+
+alias \
+	mount="sudo mount" \
+	umount="sudo umount" \
+	sdn="sudo poweroff now" \
+	reboot="sudo reboot"
+
+# Verbosity and settings that you pretty much just always are going to want.
+alias \
+	cp="cp -iv" \
+	mv="mv -iv" \
+	rm="rm -vI" \
+	bc="bc -ql" \
+	mkd="mkdir -pv" \
+	yt="yt-dlp -i --autonumber-size 2 --autonumber-start 01" \
+	ffmpeg="ffmpeg -hide_banner"
+
+# Colorize commands when possible.
+alias \
+	ls="ls -hN --color=auto --group-directories-first" \
+	grep="grep --color=auto" \
+	diff="diff --color=auto" \
+	ip="ip -color=auto"
+
+# These common commands are just too long! Abbreviate them.
+alias \
+	yeet="yay -Rns"\
+	g="git" \
+	v="$EDITOR" \
+	z="zathura"
+
+alias \
+	lf="lfub" \
+	ref="shortcuts >/dev/null; source \${XDG_CONFIG_HOME:-\$HOME/.config}/shell/shortcutrc ; source \${XDG_CONFIG_HOME:-\$HOME/.config}/shell/zshnameddirrc"

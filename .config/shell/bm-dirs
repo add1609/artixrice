@@ -1,0 +1,11 @@
+# You can add comments to these files with #
+mn  /mnt
+h   $HOME
+m   $HOME/Music
+cf  $HOME/.config
+d   $HOME/Documents
+rr  $HOME/.local/src
+sc  $HOME/.local/bin
+src $HOME/.local/src
+aur $HOME/.local/src/aur/
+GOgit $GOPATH

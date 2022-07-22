@@ -1,0 +1,65 @@
+#!/bin/bash
+
+err() { echo "Usage:
+	make-yta [OPTIONS] /path/to/dir (default: ./)
+Options:
+	-R: recursively look for meta.txt. (default: false)
+	-c: remake all files. (default: false)
+" && exit 1 ;}
+
+while getopts "hRc" o; do case "${o}" in
+	h) err ;;
+	R) rec='false' ;;
+	c) clean='false' ;;
+	*) printf "Invalid option: -%s\\n" "$OPTARG" && err ;;
+esac done
+shift $((OPTIND - 1))
+
+
+check_deps() {
+	[[ -z "$dir" ]] && err
+	[[ ! -d "$dir" ]] && echo "Provide a directory to tag. Not $dir" && err
+	[[ ! -s "$dir/ids.txt" ]] && echo "No ids.txt found. Not $dir/ids.txt" && err
+	[[ ! -s "$dir/tracks.txt" ]] && echo "No tracks.txt found. Not $dir/tracks.txt" && err
+	[[ ! -s "$dir/meta.txt" ]] && echo "No meta.txt found. Not $dir/meta.txt" && err
+}
+
+apply_clean() {
+	rm -f "$dir"/*.mp3 && yt-dlp -qi --autonumber-size 2 --autonumber-start 01 -x --audio-format mp3 \
+		--audio-quality 0 -o "%(autonumber)s.(%ext)s" -a "$dir"/ids.txt
+}
+
+tag_dir() {
+	readarray -t array < "$dir"/tracks.txt
+	readarray -t meta < "$dir"/meta.txt
+	total=${#array[@]}
+	local i=0
+	for file in "$dir"/*.mp3; do
+		[[ ! $i -lt $total ]] && break
+		dName="${file%.*}-${array[i]}.mp3"
+		mv "$file" "$dName"
+		eyeD3 -Q --remove-all -a "${meta[0]}" -A "${meta[1]}" -t "${array[i]}" \
+			-n "$((i+1))" -N "$total" -Y "${meta[2]}" -G "${meta[3]}" "$dName"
+		i=$((i+1))
+	done
+}
+
+make_dir() {
+	check_deps
+	[[ $clean ]] && apply_clean
+	tag_dir "$dir"
+}
+
+recurse_dirs() {
+	[[ -z "$PWD" ]] && err
+	Rdir=$(dirname "$PWD"/**/meta.txt)
+	for d in $Rdir; do
+		(dir=$d && cd "$d" && make_dir) &
+	done
+}
+
+[[ $rec ]] && recurse_dirs
+
+[[ ! $rec ]] && [[ -n "$1" ]] && dir=$1 || [[ -n "$PWD" ]] && dir=$PWD && make_dir || err
+
+wait && exit 0
